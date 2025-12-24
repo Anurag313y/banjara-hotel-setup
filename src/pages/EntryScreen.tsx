@@ -10,27 +10,35 @@ const EntryScreen = () => {
         animationDelay: "0.1s",
         animationFillMode: "forwards"
       }} className="w-full h-full object-cover opacity-0 animate-fade-in shadow-none" />
-        {/* Image fades downward */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-b from-transparent via-[#3f424f]/50 to-[#3f424f] z-10" />
+        {/* Image fades downward - only 5% coverage */}
+        <div className="absolute bottom-0 left-0 right-0 h-[5%] bg-gradient-to-b from-transparent to-[#3f424f] z-10" />
       </div>
 
-      {/* Content Section */}
-      <div className="px-6 pb-10 space-y-6 relative z-20 bg-[#3f424f]">
-        <div className="space-y-3 text-center">
-          <h1 className="text-3xl md:text-4xl font-display font-bold opacity-0 animate-fade-up" style={{
-          animationDelay: "0.3s",
-          animationFillMode: "forwards",
-          color: "#fdef34"
-        }}>
-            Welcome To Banjara
-          </h1>
-          <p className="text-lg font-display opacity-0 animate-fade-up" style={{
-          animationDelay: "0.4s",
-          animationFillMode: "forwards",
-          color: "#c4a866"
-        }}>
-            Set Up My Hotel
-          </p>
+      {/* Content Section with upward gradient blending into image */}
+      <div className="px-6 pb-10 space-y-6 relative z-20">
+        {/* Upward gradient to blend with image */}
+        <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-t from-[#3f424f] to-transparent -translate-y-full" />
+        <div className="bg-[#3f424f]">
+          <div className="space-y-3 text-center pt-2">
+            <h1 className="text-3xl md:text-4xl font-display font-bold opacity-0 animate-fade-up" style={{
+            animationDelay: "0.3s",
+            animationFillMode: "forwards",
+            color: "#fdef34"
+          }}>
+              Welcome To Banjara
+            </h1>
+            <p className="text-lg opacity-0 animate-fade-up italic tracking-widest" style={{
+            animationDelay: "0.4s",
+            animationFillMode: "forwards",
+            color: "#c4a866",
+            fontFamily: "'Playfair Display', serif",
+            fontStyle: "italic",
+            textTransform: "uppercase",
+            letterSpacing: "0.2em"
+          }}>
+              Setup My Hotel
+            </p>
+          </div>
         </div>
 
         <p style={{
