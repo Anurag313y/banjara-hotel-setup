@@ -11,7 +11,7 @@ const EntryScreen = () => {
         animationFillMode: "forwards"
       }} className="w-full h-full object-cover opacity-0 animate-fade-in shadow-none" />
         {/* Image fades downward */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-b from-transparent via-[#3f424f]/50 to-[#3f424f] z-10" />
+        <div className="absolute bottom-0 left-0 right-0 h-[20vh] min-h-24 bg-gradient-to-b from-transparent via-[#3f424f]/50 to-[#3f424f] z-10" />
       </div>
 
       {/* Content Section */}
