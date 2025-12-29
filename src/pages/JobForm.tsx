@@ -29,9 +29,16 @@ const JobForm = () => {
 
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+  const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024; // 10MB
+
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > MAX_IMAGE_SIZE) {
+        toast.error("Image size must be less than 5MB");
+        return;
+      }
       setFormData({ ...formData, photo: file });
       const reader = new FileReader();
       reader.onload = () => setPhotoPreview(reader.result as string);
@@ -42,6 +49,10 @@ const JobForm = () => {
   const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > MAX_DOCUMENT_SIZE) {
+        toast.error("Resume size must be less than 10MB");
+        return;
+      }
       setFormData({ ...formData, resume: file });
     }
   };
