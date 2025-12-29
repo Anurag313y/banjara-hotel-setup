@@ -29,17 +29,17 @@ const AdminDashboard = () => {
   const totalSubmissions = categoryData.reduce((sum, cat) => sum + cat.count, 0);
 
   return (
-    <div className="p-6 lg:p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
+      <div className="flex flex-col gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl lg:text-3xl font-display font-bold text-foreground">Dashboard & Analytics</h1>
-          <p className="text-muted-foreground mt-1">Overview of all submissions</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold text-foreground">Dashboard & Analytics</h1>
+          <p className="text-sm text-muted-foreground mt-1">Overview of all submissions</p>
         </div>
 
         {/* Time Filter */}
         <Select value={timeFilter} onValueChange={(v) => setTimeFilter(v as TimeFilter)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Select period" />
           </SelectTrigger>
           <SelectContent>
@@ -52,7 +52,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
         {categoryData.map((category, index) => (
           <Card 
             key={category.name}
@@ -60,34 +60,34 @@ const AdminDashboard = () => {
             style={{ animationDelay: `${0.1 + index * 0.1}s`, animationFillMode: "forwards" }}
             onClick={() => navigate(category.path)}
           >
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 p-3 sm:p-4 lg:p-6">
               <div className="flex items-center justify-between">
                 <div 
-                  className="p-2 rounded-lg" 
+                  className="p-1.5 sm:p-2 rounded-lg" 
                   style={{ backgroundColor: `${category.color}20` }}
                 >
-                  <category.icon className="w-5 h-5" style={{ color: category.color }} />
+                  <category.icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: category.color }} />
                 </div>
-                <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-1">{category.name} Forms</p>
-              <p className="text-2xl font-bold font-display">{category.count}</p>
+            <CardContent className="p-3 sm:p-4 lg:p-6 pt-0">
+              <p className="text-xs sm:text-sm text-muted-foreground mb-1">{category.name} Forms</p>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold font-display">{category.count}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Total Card */}
-      <Card className="mb-8 opacity-0 animate-fade-up" style={{ animationDelay: "0.5s", animationFillMode: "forwards" }}>
-        <CardContent className="p-6 flex items-center justify-between">
+      <Card className="mb-6 sm:mb-8 opacity-0 animate-fade-up" style={{ animationDelay: "0.5s", animationFillMode: "forwards" }}>
+        <CardContent className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
-            <p className="text-muted-foreground">Total Submissions</p>
-            <p className="text-4xl font-bold font-display mt-1">{totalSubmissions}</p>
+            <p className="text-sm text-muted-foreground">Total Submissions</p>
+            <p className="text-2xl sm:text-3xl lg:text-4xl font-bold font-display mt-1">{totalSubmissions}</p>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">
+          <div className="text-left sm:text-right">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {timeFilter === "today" && "Today"}
               {timeFilter === "7days" && "Last 7 days"}
               {timeFilter === "30days" && "Last 30 days"}
@@ -99,21 +99,22 @@ const AdminDashboard = () => {
 
       {/* Chart */}
       <Card className="opacity-0 animate-fade-up" style={{ animationDelay: "0.6s", animationFillMode: "forwards" }}>
-        <CardHeader>
-          <CardTitle>Category Distribution</CardTitle>
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Category Distribution</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
+        <CardContent className="p-4 sm:p-6 pt-0">
+          <div className="h-[200px] sm:h-[250px] lg:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                <XAxis type="number" />
-                <YAxis dataKey="name" type="category" width={80} />
+                <XAxis type="number" tick={{ fontSize: 12 }} />
+                <YAxis dataKey="name" type="category" width={60} tick={{ fontSize: 12 }} />
                 <Tooltip 
                   contentStyle={{ 
                     backgroundColor: "hsl(var(--card))",
                     borderColor: "hsl(var(--border))",
                     borderRadius: "0.75rem",
+                    fontSize: "12px"
                   }}
                 />
                 <Bar dataKey="value" radius={[0, 8, 8, 0]} />

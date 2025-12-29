@@ -139,21 +139,21 @@ const AdminJobSeekers = () => {
   });
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl lg:text-3xl font-display font-bold text-foreground">Job Seekers</h1>
-        <p className="text-muted-foreground mt-1">{jobSeekers.length} total applications</p>
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-display font-bold text-foreground">Job Seekers</h1>
+        <p className="text-sm text-muted-foreground mt-1">{jobSeekers.length} total applications</p>
       </div>
 
       {/* Filters */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
+      <Card className="mb-4 sm:mb-6">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search by name or location..."
-                className="pl-10"
+                className="pl-10 text-sm"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -174,19 +174,84 @@ const AdminJobSeekers = () => {
         </CardContent>
       </Card>
 
-      {/* Table */}
-      <Card>
+      {/* Mobile Cards View */}
+      <div className="block lg:hidden space-y-3">
+        {filteredSeekers.map((seeker) => (
+          <Card key={seeker.id} className="overflow-hidden">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {seeker.photo ? (
+                    <img src={seeker.photo} alt={seeker.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-6 h-6 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="font-medium text-sm">{seeker.name}</h3>
+                      <p className="text-xs text-muted-foreground">{seeker.profile} • {seeker.location}</p>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-6 p-0">
+                          <Badge className={`${statusColors[seeker.status]} text-xs cursor-pointer`}>
+                            {seeker.status}
+                            <ChevronDown className="w-3 h-3 ml-1" />
+                          </Badge>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {jobSeekerStatuses.map((status) => (
+                          <DropdownMenuItem
+                            key={status}
+                            onClick={() => handleStatusChange(seeker.id, status)}
+                            className={seeker.status === status ? "bg-muted" : ""}
+                          >
+                            <Badge className={statusColors[status]}>{status}</Badge>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs text-muted-foreground">{seeker.experience} yrs exp</span>
+                    <span className="text-xs text-muted-foreground">•</span>
+                    <span className="text-xs text-muted-foreground">{seeker.age} yrs</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-3">
+                    <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setSelectedSeeker(seeker)}>
+                      <Eye className="w-3 h-3 mr-1" />
+                      View
+                    </Button>
+                    {seeker.resume && (
+                      <Button variant="outline" size="sm" className="h-7 text-xs">
+                        <Download className="w-3 h-3 mr-1" />
+                        Resume
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <Card className="hidden lg:block">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Photo</TableHead>
                 <TableHead>Full Name</TableHead>
-                <TableHead className="hidden md:table-cell">Age</TableHead>
-                <TableHead className="hidden md:table-cell">Location</TableHead>
-                <TableHead className="hidden lg:table-cell">Job Profile</TableHead>
-                <TableHead className="hidden lg:table-cell">Experience</TableHead>
-                <TableHead className="hidden xl:table-cell">Phone</TableHead>
+                <TableHead>Age</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Job Profile</TableHead>
+                <TableHead>Experience</TableHead>
+                <TableHead>Phone</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -204,11 +269,11 @@ const AdminJobSeekers = () => {
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">{seeker.name}</TableCell>
-                  <TableCell className="hidden md:table-cell">{seeker.age} yrs</TableCell>
-                  <TableCell className="hidden md:table-cell text-muted-foreground">{seeker.location}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{seeker.profile}</TableCell>
-                  <TableCell className="hidden lg:table-cell">{seeker.experience} yrs</TableCell>
-                  <TableCell className="hidden xl:table-cell text-muted-foreground">{seeker.phone}</TableCell>
+                  <TableCell>{seeker.age} yrs</TableCell>
+                  <TableCell className="text-muted-foreground">{seeker.location}</TableCell>
+                  <TableCell>{seeker.profile}</TableCell>
+                  <TableCell>{seeker.experience} yrs</TableCell>
+                  <TableCell className="text-muted-foreground">{seeker.phone}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -257,58 +322,64 @@ const AdminJobSeekers = () => {
         </CardContent>
       </Card>
 
+      {filteredSeekers.length === 0 && (
+        <div className="block lg:hidden text-center py-12 text-muted-foreground">
+          No job seekers found
+        </div>
+      )}
+
       {/* Detail Modal - Full Form Data */}
       <Dialog open={!!selectedSeeker} onOpenChange={() => setSelectedSeeker(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display">Applicant Details</DialogTitle>
           </DialogHeader>
           {selectedSeeker && (
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
                   {selectedSeeker.photo ? (
                     <img src={selectedSeeker.photo} alt={selectedSeeker.name} className="w-full h-full object-cover" />
                   ) : (
-                    <User className="w-10 h-10 text-muted-foreground" />
+                    <User className="w-8 h-8 sm:w-10 sm:h-10 text-muted-foreground" />
                   )}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg">{selectedSeeker.name}</h3>
-                  <p className="text-muted-foreground">{selectedSeeker.profile}</p>
+                  <h3 className="font-semibold text-base sm:text-lg">{selectedSeeker.name}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedSeeker.profile}</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-muted/50 p-3 rounded-lg">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 text-sm">
+                <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Age</p>
-                  <p className="font-medium">{selectedSeeker.age} years</p>
+                  <p className="font-medium text-sm">{selectedSeeker.age} years</p>
                 </div>
-                <div className="bg-muted/50 p-3 rounded-lg">
+                <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Location</p>
-                  <p className="font-medium">{selectedSeeker.location}</p>
+                  <p className="font-medium text-sm">{selectedSeeker.location}</p>
                 </div>
-                <div className="bg-muted/50 p-3 rounded-lg">
+                <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Work Experience</p>
-                  <p className="font-medium">{selectedSeeker.experience} years</p>
+                  <p className="font-medium text-sm">{selectedSeeker.experience} years</p>
                 </div>
-                <div className="bg-muted/50 p-3 rounded-lg">
+                <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Phone Number</p>
-                  <p className="font-medium">{selectedSeeker.phone}</p>
+                  <p className="font-medium text-sm">{selectedSeeker.phone}</p>
                 </div>
-                <div className="bg-muted/50 p-3 rounded-lg">
+                <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Last Salary</p>
-                  <p className="font-medium">₹{selectedSeeker.lastSalary}/month</p>
+                  <p className="font-medium text-sm">₹{selectedSeeker.lastSalary}/month</p>
                 </div>
-                <div className="bg-muted/50 p-3 rounded-lg">
+                <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Expected Salary</p>
-                  <p className="font-medium">₹{selectedSeeker.expectedSalary}/month</p>
+                  <p className="font-medium text-sm">₹{selectedSeeker.expectedSalary}/month</p>
                 </div>
-                <div className="bg-muted/50 p-3 rounded-lg">
+                <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Applied On</p>
-                  <p className="font-medium">{selectedSeeker.date}</p>
+                  <p className="font-medium text-sm">{selectedSeeker.date}</p>
                 </div>
-                <div className="bg-muted/50 p-3 rounded-lg">
+                <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Status</p>
                   <Badge className={statusColors[selectedSeeker.status]}>
                     {selectedSeeker.status}
