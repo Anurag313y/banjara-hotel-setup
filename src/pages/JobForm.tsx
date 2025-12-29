@@ -71,6 +71,24 @@ const JobForm = () => {
       return;
     }
 
+    // Validate age (must be 18+)
+    if (formData.age) {
+      const age = parseInt(formData.age);
+      if (isNaN(age) || age < 18) {
+        toast.error("Age must be 18 or older");
+        return;
+      }
+    }
+
+    // Validate experience (must be non-negative)
+    if (formData.experience) {
+      const experience = parseInt(formData.experience);
+      if (isNaN(experience) || experience < 0) {
+        toast.error("Work experience cannot be negative");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {

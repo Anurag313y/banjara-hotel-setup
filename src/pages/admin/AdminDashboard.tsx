@@ -1,32 +1,93 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Briefcase, Users, ChefHat, Wine, ArrowRight } from "lucide-react";
+import { Briefcase, Users, ChefHat, Wine, ArrowRight, Loader2 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-
-// Mock data
-const categoryData = [
-  { name: "Jobs", count: 24, icon: Briefcase, path: "/admin/jobs", color: "hsl(20, 70%, 45%)" },
-  { name: "Staff", count: 12, icon: Users, path: "/admin/staff", color: "hsl(38, 80%, 55%)" },
-  { name: "Kitchen", count: 8, icon: ChefHat, path: "/admin/kitchen", color: "hsl(140, 20%, 45%)" },
-  { name: "CCG", count: 15, icon: Wine, path: "/admin/ccg", color: "hsl(25, 20%, 50%)" },
-];
-
-const chartData = [
-  { name: "Jobs", value: 24, fill: "hsl(20, 70%, 45%)" },
-  { name: "Staff", value: 12, fill: "hsl(38, 80%, 55%)" },
-  { name: "Kitchen", value: 8, fill: "hsl(140, 20%, 45%)" },
-  { name: "CCG", value: 15, fill: "hsl(25, 20%, 50%)" },
-];
+import { supabase } from "@/integrations/supabase/client";
 
 type TimeFilter = "today" | "7days" | "30days" | "custom";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [timeFilter, setTimeFilter] = useState<TimeFilter>("30days");
+  const [loading, setLoading] = useState(true);
+  const [counts, setCounts] = useState({
+    jobs: 0,
+    staff: 0,
+    kitchen: 0,
+    ccg: 0,
+  });
+
+  useEffect(() => {
+    fetchCounts();
+  }, [timeFilter]);
+
+  const fetchCounts = async () => {
+    setLoading(true);
+    try {
+      // Get date filter
+      let dateFilter = new Date();
+      if (timeFilter === "today") {
+        dateFilter.setHours(0, 0, 0, 0);
+      } else if (timeFilter === "7days") {
+        dateFilter.setDate(dateFilter.getDate() - 7);
+      } else if (timeFilter === "30days") {
+        dateFilter.setDate(dateFilter.getDate() - 30);
+      }
+
+      // Fetch job seekers count
+      const { count: jobsCount } = await supabase
+        .from('job_seekers')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', dateFilter.toISOString());
+
+      // Fetch businesses count by type
+      const { data: businesses } = await supabase
+        .from('businesses')
+        .select('business_type')
+        .gte('created_at', dateFilter.toISOString());
+
+      const staffCount = businesses?.filter(b => b.business_type === 'staff').length || 0;
+      const kitchenCount = businesses?.filter(b => b.business_type === 'kitchen').length || 0;
+      const ccgCount = businesses?.filter(b => b.business_type === 'ccg').length || 0;
+
+      setCounts({
+        jobs: jobsCount || 0,
+        staff: staffCount,
+        kitchen: kitchenCount,
+        ccg: ccgCount,
+      });
+    } catch (error) {
+      console.error("Error fetching counts:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const categoryData = [
+    { name: "Jobs", count: counts.jobs, icon: Briefcase, path: "/admin/jobs", color: "hsl(20, 70%, 45%)" },
+    { name: "Staff", count: counts.staff, icon: Users, path: "/admin/staff", color: "hsl(38, 80%, 55%)" },
+    { name: "Kitchen", count: counts.kitchen, icon: ChefHat, path: "/admin/kitchen", color: "hsl(140, 20%, 45%)" },
+    { name: "CCG", count: counts.ccg, icon: Wine, path: "/admin/ccg", color: "hsl(25, 20%, 50%)" },
+  ];
+
+  const chartData = [
+    { name: "Jobs", value: counts.jobs, fill: "hsl(20, 70%, 45%)" },
+    { name: "Staff", value: counts.staff, fill: "hsl(38, 80%, 55%)" },
+    { name: "Kitchen", value: counts.kitchen, fill: "hsl(140, 20%, 45%)" },
+    { name: "CCG", value: counts.ccg, fill: "hsl(25, 20%, 50%)" },
+  ];
 
   const totalSubmissions = categoryData.reduce((sum, cat) => sum + cat.count, 0);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
