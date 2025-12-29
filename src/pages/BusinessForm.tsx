@@ -5,17 +5,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Upload, Building2, X } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BusinessFormProps {
   title: string;
   subtitle: string;
   documentLabel: string;
+  businessType: string;
 }
 
-const BusinessForm = ({ title, subtitle, documentLabel }: BusinessFormProps) => {
+const BusinessForm = ({ title, subtitle, documentLabel, businessType }: BusinessFormProps) => {
   const navigate = useNavigate();
   const logoInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     logo: null as File | null,
@@ -45,16 +48,68 @@ const BusinessForm = ({ title, subtitle, documentLabel }: BusinessFormProps) => 
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const uploadFile = async (file: File, bucket: string) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(fileName, file);
+    
+    if (error) throw error;
+    
+    const { data: urlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(fileName);
+    
+    return urlData.publicUrl;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.hotelName || !formData.contactNumber || !formData.ownerName) {
-      toast.error("Please fill in all required fields");
+    if (!formData.hotelName || !formData.contactNumber || !formData.ownerName || !formData.document) {
+      toast.error("Please fill in all required fields including the document");
       return;
     }
 
-    console.log("Business form submitted:", formData);
-    navigate("/success");
+    setIsSubmitting(true);
+
+    try {
+      let logoUrl = null;
+      let documentUrl = null;
+
+      // Upload logo if provided
+      if (formData.logo) {
+        logoUrl = await uploadFile(formData.logo, 'logos');
+      }
+
+      // Upload document
+      if (formData.document) {
+        documentUrl = await uploadFile(formData.document, 'documents');
+      }
+
+      // Insert into database
+      const { error } = await supabase.from('businesses').insert({
+        hotel_name: formData.hotelName,
+        location: formData.location || null,
+        owner_name: formData.ownerName,
+        contact_number: formData.contactNumber,
+        logo_url: logoUrl,
+        document_url: documentUrl,
+        business_type: businessType,
+      });
+
+      if (error) throw error;
+
+      toast.success("Requirement submitted successfully!");
+      navigate("/success");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("Failed to submit requirement. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -162,7 +217,7 @@ const BusinessForm = ({ title, subtitle, documentLabel }: BusinessFormProps) => 
 
           {/* Document Upload */}
           <div className="space-y-2">
-            <Label>{documentLabel}</Label>
+            <Label>{documentLabel} *</Label>
             <div
               className="border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
               onClick={() => docInputRef.current?.click()}
@@ -171,7 +226,7 @@ const BusinessForm = ({ title, subtitle, documentLabel }: BusinessFormProps) => 
               {formData.document ? (
                 <p className="text-sm text-primary font-medium">{formData.document.name}</p>
               ) : (
-                <p className="text-sm text-muted-foreground">Tap to upload PDF/Image</p>
+                <p className="text-sm text-muted-foreground">Tap to upload PDF/Image (Required)</p>
               )}
             </div>
             <input
@@ -187,8 +242,15 @@ const BusinessForm = ({ title, subtitle, documentLabel }: BusinessFormProps) => 
 
       {/* Sticky Submit Button */}
       <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/50 p-4">
-        <Button type="submit" variant="hero" size="xl" className="w-full" onClick={handleSubmit}>
-          Submit Requirement
+        <Button 
+          type="submit" 
+          variant="hero" 
+          size="xl" 
+          className="w-full" 
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Submitting..." : "Submit Requirement"}
         </Button>
       </div>
     </div>
@@ -200,6 +262,7 @@ export const StaffForm = () => (
     title="Looking For Staff"
     subtitle="Submit your requirement"
     documentLabel="Upload Staff Requirement Document"
+    businessType="staff"
   />
 );
 
@@ -208,6 +271,7 @@ export const KitchenForm = () => (
     title="Looking For Kitchen Equipment"
     subtitle="Submit your requirement"
     documentLabel="Upload Equipment Requirement Document"
+    businessType="kitchen"
   />
 );
 
@@ -216,6 +280,7 @@ export const CCGForm = () => (
     title="Looking For CCG"
     subtitle="Cutlery, Crockery & Glassware"
     documentLabel="Upload CCG Requirement Document"
+    businessType="ccg"
   />
 );
 
