@@ -32,9 +32,16 @@ const BusinessForm = ({ title, subtitle, documentLabel, businessType }: Business
 
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+  const MAX_DOCUMENT_SIZE = 10 * 1024 * 1024; // 10MB
+
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > MAX_IMAGE_SIZE) {
+        toast.error("Image size must be less than 5MB");
+        return;
+      }
       setFormData({ ...formData, logo: file });
       const reader = new FileReader();
       reader.onload = () => setLogoPreview(reader.result as string);
@@ -45,6 +52,10 @@ const BusinessForm = ({ title, subtitle, documentLabel, businessType }: Business
   const handleDocChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > MAX_DOCUMENT_SIZE) {
+        toast.error("Document size must be less than 10MB");
+        return;
+      }
       setFormData({ ...formData, document: file });
     }
   };
