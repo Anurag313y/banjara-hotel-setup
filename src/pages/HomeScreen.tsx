@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { cloud as supabase } from "@/lib/cloudClient";
 
 import banjaraLogo from "@/assets/banjara-logo.png";
 import jobReceptionist from "@/assets/job-receptionist.jpeg";

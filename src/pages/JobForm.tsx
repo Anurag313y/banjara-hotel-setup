@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Upload, Camera, X } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { cloud as supabase } from "@/lib/cloudClient";
+
 
 const JobForm = () => {
   const navigate = useNavigate();
