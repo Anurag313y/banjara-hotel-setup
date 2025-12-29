@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { supabase } from "@/integrations/supabase/client";
+import { cloud as supabase } from "@/lib/cloudClient";
 
 type JobSeekerStatus = "New" | "Contacted" | "Closed";
 
