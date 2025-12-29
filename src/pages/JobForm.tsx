@@ -5,11 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Upload, Camera, X } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const JobForm = () => {
   const navigate = useNavigate();
   const photoInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     photo: null as File | null,
@@ -43,7 +45,24 @@ const JobForm = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const uploadFile = async (file: File, bucket: string) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(fileName, file);
+    
+    if (error) throw error;
+    
+    const { data: urlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(fileName);
+    
+    return urlData.publicUrl;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.fullName || !formData.phone || !formData.jobProfile || !formData.resume) {
@@ -51,8 +70,46 @@ const JobForm = () => {
       return;
     }
 
-    console.log("Job form submitted:", formData);
-    navigate("/success");
+    setIsSubmitting(true);
+
+    try {
+      let photoUrl = null;
+      let resumeUrl = null;
+
+      // Upload photo if provided
+      if (formData.photo) {
+        photoUrl = await uploadFile(formData.photo, 'photos');
+      }
+
+      // Upload resume
+      if (formData.resume) {
+        resumeUrl = await uploadFile(formData.resume, 'resumes');
+      }
+
+      // Insert into database
+      const { error } = await supabase.from('job_seekers').insert({
+        full_name: formData.fullName,
+        age: formData.age ? parseInt(formData.age) : null,
+        location: formData.location || null,
+        job_profile: formData.jobProfile,
+        experience: formData.experience || null,
+        phone: formData.phone,
+        last_salary: formData.lastSalary || null,
+        expected_salary: formData.expectedSalary || null,
+        photo_url: photoUrl,
+        resume_url: resumeUrl,
+      });
+
+      if (error) throw error;
+
+      toast.success("Application submitted successfully!");
+      navigate("/success");
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("Failed to submit application. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -229,8 +286,15 @@ const JobForm = () => {
 
       {/* Sticky Submit Button */}
       <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border/50 p-4">
-        <Button type="submit" variant="hero" size="xl" className="w-full max-w-lg mx-auto block" onClick={handleSubmit}>
-          Submit Application
+        <Button 
+          type="submit" 
+          variant="hero" 
+          size="xl" 
+          className="w-full max-w-lg mx-auto block" 
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Submitting..." : "Submit Application"}
         </Button>
       </div>
     </div>

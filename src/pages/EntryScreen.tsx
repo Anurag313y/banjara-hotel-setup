@@ -1,51 +1,46 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import img1Min from "@/assets/img1-min.png";
+import hotelIllustration from "@/assets/hotel-illustration.png";
 
 const EntryScreen = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden bg-gradient-to-b from-[#5a9bb8] via-[#6b7db8] to-[#5a2aa0]">
-      {/* Top Image Section with Fade */}
-      <div className="flex-1 relative flex items-start justify-center pt-8 px-4">
-        <div className="relative w-full max-w-md">
+    <div className="min-h-screen flex flex-col relative overflow-hidden">
+      {/* Top Image Section - Full image, no purple overlay */}
+      <div className="flex-1 relative flex items-start justify-center">
+        <div className="relative w-full">
           <img
-            src={img1Min}
+            src={hotelIllustration}
             alt="Hotel management illustration"
             style={{
               animationDelay: "0.1s",
               animationFillMode: "forwards"
             }}
-            className="w-full h-auto object-contain opacity-0 animate-fade-in"
+            className="w-full h-auto object-cover opacity-0 animate-fade-in"
           />
-          {/* Gradient Overlay for smooth fade - fades from transparent to purple */}
+          {/* Gradient Overlay - fades from transparent to purple going downward */}
           <div
-            className="absolute inset-x-0 bottom-0 h-32 pointer-events-none"
+            className="absolute inset-x-0 bottom-0 h-40 pointer-events-none"
             style={{
-              background: "linear-gradient(to bottom, transparent 0%, rgba(90, 42, 160, 0.3) 50%, rgba(90, 42, 160, 0.8) 100%)"
+              background: "linear-gradient(to bottom, transparent 0%, #5a2aa0 100%)"
             }}
           />
         </div>
       </div>
 
-      {/* Bottom Content Section with Fade */}
-      <div className="relative px-6 pb-10 pt-2 space-y-6 z-10">
-        {/* Top fade overlay for smooth transition from image */}
-        <div
-          className="absolute inset-x-0 top-0 h-24 pointer-events-none -mt-24"
-          style={{
-            background: "linear-gradient(to top, rgba(90, 42, 160, 0.95) 0%, rgba(90, 42, 160, 0.4) 70%, transparent 100%)"
-          }}
-        />
-
-        <div className="space-y-2 text-center relative z-10">
+      {/* Bottom Content Section - Purple background */}
+      <div 
+        className="relative px-6 pb-10 pt-6 space-y-6 z-10"
+        style={{ backgroundColor: "#5a2aa0" }}
+      >
+        <div className="space-y-1 text-center relative z-10">
           <h1
             className="text-3xl md:text-4xl font-display font-bold italic opacity-0 animate-fade-up leading-tight"
             style={{
               animationDelay: "0.3s",
               animationFillMode: "forwards",
-              color: "#fcec36"
+              color: "rgba(252, 236, 54, 1)"
             }}
           >
             Welcome
@@ -55,7 +50,7 @@ const EntryScreen = () => {
             style={{
               animationDelay: "0.35s",
               animationFillMode: "forwards",
-              color: "#fcec36"
+              color: "rgba(252, 236, 54, 1)"
             }}
           >
             To
@@ -65,7 +60,7 @@ const EntryScreen = () => {
             style={{
               animationDelay: "0.4s",
               animationFillMode: "forwards",
-              color: "#fcec36"
+              color: "rgba(252, 236, 54, 1)"
             }}
           >
             Banjara Set-up My Hotel

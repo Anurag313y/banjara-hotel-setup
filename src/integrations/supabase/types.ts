@@ -14,7 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      businesses: {
+        Row: {
+          business_type: string
+          contact_number: string
+          created_at: string
+          document_url: string | null
+          hotel_name: string
+          id: string
+          location: string | null
+          logo_url: string | null
+          owner_name: string
+        }
+        Insert: {
+          business_type: string
+          contact_number: string
+          created_at?: string
+          document_url?: string | null
+          hotel_name: string
+          id?: string
+          location?: string | null
+          logo_url?: string | null
+          owner_name: string
+        }
+        Update: {
+          business_type?: string
+          contact_number?: string
+          created_at?: string
+          document_url?: string | null
+          hotel_name?: string
+          id?: string
+          location?: string | null
+          logo_url?: string | null
+          owner_name?: string
+        }
+        Relationships: []
+      }
+      job_seekers: {
+        Row: {
+          age: number | null
+          created_at: string
+          expected_salary: string | null
+          experience: string | null
+          full_name: string
+          id: string
+          job_profile: string
+          last_salary: string | null
+          location: string | null
+          phone: string
+          photo_url: string | null
+          resume_url: string | null
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string
+          expected_salary?: string | null
+          experience?: string | null
+          full_name: string
+          id?: string
+          job_profile: string
+          last_salary?: string | null
+          location?: string | null
+          phone: string
+          photo_url?: string | null
+          resume_url?: string | null
+        }
+        Update: {
+          age?: number | null
+          created_at?: string
+          expected_salary?: string | null
+          experience?: string | null
+          full_name?: string
+          id?: string
+          job_profile?: string
+          last_salary?: string | null
+          location?: string | null
+          phone?: string
+          photo_url?: string | null
+          resume_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

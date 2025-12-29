@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 import banjaraLogo from "@/assets/banjara-logo.png";
 import jobReceptionist from "@/assets/job-receptionist.jpeg";
@@ -92,9 +93,53 @@ const ResortCard = ({ name, logo }: ResortCardProps) => (
   </div>
 );
 
+interface JobSeeker {
+  id: string;
+  full_name: string;
+  photo_url: string | null;
+}
+
+interface Business {
+  id: string;
+  hotel_name: string;
+  logo_url: string | null;
+}
+
 const HomeScreen = () => {
   const occupiedRef = useRef<HTMLDivElement>(null);
   const resortsRef = useRef<HTMLDivElement>(null);
+  
+  const [jobSeekers, setJobSeekers] = useState<JobSeeker[]>([]);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+
+  useEffect(() => {
+    // Fetch job seekers
+    const fetchJobSeekers = async () => {
+      const { data, error } = await supabase
+        .from('job_seekers')
+        .select('id, full_name, photo_url')
+        .order('created_at', { ascending: false });
+      
+      if (!error && data) {
+        setJobSeekers(data);
+      }
+    };
+
+    // Fetch businesses
+    const fetchBusinesses = async () => {
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('id, hotel_name, logo_url')
+        .order('created_at', { ascending: false });
+      
+      if (!error && data) {
+        setBusinesses(data);
+      }
+    };
+
+    fetchJobSeekers();
+    fetchBusinesses();
+  }, []);
 
   const categories = [
     {
@@ -127,19 +172,36 @@ const HomeScreen = () => {
     },
   ];
 
-  const occupiedPeople = [
+  // Default placeholder people if no job seekers in database
+  const defaultPeople = [
     { name: "Pankaj Namdev", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face" },
     { name: "Kiran Yadav", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face" },
     { name: "Nisha", image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face" },
     { name: "Rahul Singh", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face" },
   ];
 
-  const verifiedResorts = [
+  // Default placeholder resorts if no businesses in database
+  const defaultResorts = [
     { name: "Swaram", logo: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=150&h=150&fit=crop" },
     { name: "Rudraksh", logo: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=150&h=150&fit=crop" },
     { name: "Bagicha", logo: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=150&h=150&fit=crop" },
     { name: "Palm Resort", logo: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=150&h=150&fit=crop" },
   ];
+
+  // Combine database data with defaults
+  const occupiedPeople = jobSeekers.length > 0 
+    ? jobSeekers.map(js => ({
+        name: js.full_name,
+        image: js.photo_url || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face"
+      }))
+    : defaultPeople;
+
+  const verifiedResorts = businesses.length > 0
+    ? businesses.map(b => ({
+        name: b.hotel_name,
+        logo: b.logo_url || "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=150&h=150&fit=crop"
+      }))
+    : defaultResorts;
 
   const scroll = (ref: React.RefObject<HTMLDivElement>, direction: 'left' | 'right') => {
     if (ref.current) {
@@ -208,8 +270,8 @@ const HomeScreen = () => {
               className="flex gap-4 overflow-x-auto scrollbar-hide py-2 px-8"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              {occupiedPeople.map((person) => (
-                <PersonCard key={person.name} {...person} />
+              {occupiedPeople.map((person, index) => (
+                <PersonCard key={`${person.name}-${index}`} {...person} />
               ))}
             </div>
             <button 
@@ -243,8 +305,8 @@ const HomeScreen = () => {
               className="flex gap-4 overflow-x-auto scrollbar-hide py-2 px-8"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
-              {verifiedResorts.map((resort) => (
-                <ResortCard key={resort.name} {...resort} />
+              {verifiedResorts.map((resort, index) => (
+                <ResortCard key={`${resort.name}-${index}`} {...resort} />
               ))}
             </div>
             <button 
