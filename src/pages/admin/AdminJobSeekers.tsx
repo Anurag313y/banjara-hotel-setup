@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -6,18 +6,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Filter, Eye, Download, User, ChevronDown } from "lucide-react";
+import { Search, Filter, Eye, Download, User, ChevronDown, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { supabase } from "@/integrations/supabase/client";
 
 type JobSeekerStatus = "New" | "Contacted" | "Closed";
 
 interface JobSeeker {
-  id: number;
+  id: string;
   photo: string | null;
   name: string;
   age: string;
@@ -32,85 +33,6 @@ interface JobSeeker {
   status: JobSeekerStatus;
 }
 
-// Mock data with full form fields
-const initialJobSeekers: JobSeeker[] = [
-  { 
-    id: 1, 
-    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    name: "Rajesh Kumar", 
-    age: "28",
-    location: "Mumbai", 
-    profile: "Chef", 
-    experience: "5",
-    phone: "+91 98765 43210", 
-    lastSalary: "35000",
-    expectedSalary: "45000",
-    resume: "rajesh_resume.pdf",
-    date: "2024-01-15", 
-    status: "New" 
-  },
-  { 
-    id: 2, 
-    photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
-    name: "Priya Sharma", 
-    age: "24",
-    location: "Delhi", 
-    profile: "Server", 
-    experience: "2",
-    phone: "+91 98765 43211", 
-    lastSalary: "20000",
-    expectedSalary: "28000",
-    resume: "priya_resume.pdf",
-    date: "2024-01-14", 
-    status: "Contacted" 
-  },
-  { 
-    id: 3, 
-    photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-    name: "Amit Patel", 
-    age: "35",
-    location: "Ahmedabad", 
-    profile: "Manager", 
-    experience: "10",
-    phone: "+91 98765 43212", 
-    lastSalary: "60000",
-    expectedSalary: "75000",
-    resume: "amit_resume.pdf",
-    date: "2024-01-13", 
-    status: "Closed" 
-  },
-  { 
-    id: 4, 
-    photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    name: "Sneha Reddy", 
-    age: "26",
-    location: "Hyderabad", 
-    profile: "Bartender", 
-    experience: "3",
-    phone: "+91 98765 43213", 
-    lastSalary: "25000",
-    expectedSalary: "32000",
-    resume: "sneha_resume.pdf",
-    date: "2024-01-12", 
-    status: "New" 
-  },
-  { 
-    id: 5, 
-    photo: null,
-    name: "Vikram Singh", 
-    age: "30",
-    location: "Jaipur", 
-    profile: "Housekeeping", 
-    experience: "4",
-    phone: "+91 98765 43214", 
-    lastSalary: "18000",
-    expectedSalary: "22000",
-    resume: null,
-    date: "2024-01-11", 
-    status: "New" 
-  },
-];
-
 const jobSeekerStatuses: JobSeekerStatus[] = ["New", "Contacted", "Closed"];
 
 const statusColors: Record<JobSeekerStatus, string> = {
@@ -120,12 +42,50 @@ const statusColors: Record<JobSeekerStatus, string> = {
 };
 
 const AdminJobSeekers = () => {
-  const [jobSeekers, setJobSeekers] = useState<JobSeeker[]>(initialJobSeekers);
+  const [jobSeekers, setJobSeekers] = useState<JobSeeker[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedSeeker, setSelectedSeeker] = useState<JobSeeker | null>(null);
 
-  const handleStatusChange = (id: number, newStatus: JobSeekerStatus) => {
+  useEffect(() => {
+    fetchJobSeekers();
+  }, []);
+
+  const fetchJobSeekers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('job_seekers')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const mapped: JobSeeker[] = (data || []).map(item => ({
+        id: item.id,
+        photo: item.photo_url,
+        name: item.full_name,
+        age: item.age?.toString() || "",
+        location: item.location || "",
+        profile: item.job_profile,
+        experience: item.experience || "",
+        phone: item.phone,
+        lastSalary: item.last_salary || "",
+        expectedSalary: item.expected_salary || "",
+        resume: item.resume_url,
+        date: new Date(item.created_at).toLocaleDateString(),
+        status: "New" as JobSeekerStatus, // Default status - could be stored in DB later
+      }));
+
+      setJobSeekers(mapped);
+    } catch (error) {
+      console.error("Error fetching job seekers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusChange = (id: string, newStatus: JobSeekerStatus) => {
     setJobSeekers(prev => prev.map(seeker => 
       seeker.id === id ? { ...seeker, status: newStatus } : seeker
     ));
@@ -137,6 +97,14 @@ const AdminJobSeekers = () => {
     const matchesStatus = statusFilter === "all" || seeker.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
@@ -226,9 +194,11 @@ const AdminJobSeekers = () => {
                       View
                     </Button>
                     {seeker.resume && (
-                      <Button variant="outline" size="sm" className="h-7 text-xs">
-                        <Download className="w-3 h-3 mr-1" />
-                        Resume
+                      <Button variant="outline" size="sm" className="h-7 text-xs" asChild>
+                        <a href={seeker.resume} target="_blank" rel="noopener noreferrer">
+                          <Download className="w-3 h-3 mr-1" />
+                          Resume
+                        </a>
                       </Button>
                     )}
                   </div>
@@ -269,10 +239,10 @@ const AdminJobSeekers = () => {
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">{seeker.name}</TableCell>
-                  <TableCell>{seeker.age} yrs</TableCell>
-                  <TableCell className="text-muted-foreground">{seeker.location}</TableCell>
+                  <TableCell>{seeker.age ? `${seeker.age} yrs` : "-"}</TableCell>
+                  <TableCell className="text-muted-foreground">{seeker.location || "-"}</TableCell>
                   <TableCell>{seeker.profile}</TableCell>
-                  <TableCell>{seeker.experience} yrs</TableCell>
+                  <TableCell>{seeker.experience ? `${seeker.experience} yrs` : "-"}</TableCell>
                   <TableCell className="text-muted-foreground">{seeker.phone}</TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -303,8 +273,10 @@ const AdminJobSeekers = () => {
                         <Eye className="w-4 h-4" />
                       </Button>
                       {seeker.resume && (
-                        <Button variant="ghost" size="icon">
-                          <Download className="w-4 h-4" />
+                        <Button variant="ghost" size="icon" asChild>
+                          <a href={seeker.resume} target="_blank" rel="noopener noreferrer">
+                            <Download className="w-4 h-4" />
+                          </a>
                         </Button>
                       )}
                     </div>
@@ -353,15 +325,15 @@ const AdminJobSeekers = () => {
               <div className="grid grid-cols-2 gap-2 sm:gap-3 text-sm">
                 <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Age</p>
-                  <p className="font-medium text-sm">{selectedSeeker.age} years</p>
+                  <p className="font-medium text-sm">{selectedSeeker.age ? `${selectedSeeker.age} years` : "-"}</p>
                 </div>
                 <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Location</p>
-                  <p className="font-medium text-sm">{selectedSeeker.location}</p>
+                  <p className="font-medium text-sm">{selectedSeeker.location || "-"}</p>
                 </div>
                 <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Work Experience</p>
-                  <p className="font-medium text-sm">{selectedSeeker.experience} years</p>
+                  <p className="font-medium text-sm">{selectedSeeker.experience ? `${selectedSeeker.experience} years` : "-"}</p>
                 </div>
                 <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Phone Number</p>
@@ -369,11 +341,11 @@ const AdminJobSeekers = () => {
                 </div>
                 <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Last Salary</p>
-                  <p className="font-medium text-sm">₹{selectedSeeker.lastSalary}/month</p>
+                  <p className="font-medium text-sm">{selectedSeeker.lastSalary ? `₹${selectedSeeker.lastSalary}/month` : "-"}</p>
                 </div>
                 <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Expected Salary</p>
-                  <p className="font-medium text-sm">₹{selectedSeeker.expectedSalary}/month</p>
+                  <p className="font-medium text-sm">{selectedSeeker.expectedSalary ? `₹${selectedSeeker.expectedSalary}/month` : "-"}</p>
                 </div>
                 <div className="bg-muted/50 p-2 sm:p-3 rounded-lg">
                   <p className="text-muted-foreground text-xs">Applied On</p>
@@ -388,9 +360,11 @@ const AdminJobSeekers = () => {
               </div>
 
               {selectedSeeker.resume && (
-                <Button variant="secondary" className="w-full">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download Resume ({selectedSeeker.resume})
+                <Button variant="secondary" className="w-full" asChild>
+                  <a href={selectedSeeker.resume} target="_blank" rel="noopener noreferrer">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Resume
+                  </a>
                 </Button>
               )}
             </div>

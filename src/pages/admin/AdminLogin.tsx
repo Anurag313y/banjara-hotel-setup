@@ -74,9 +74,6 @@ const AdminLogin = () => {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            Demo: admin@banjara.com / admin123
-          </p>
         </CardContent>
       </Card>
     </div>

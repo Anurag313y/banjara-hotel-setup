@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -6,26 +6,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Filter, Eye, Download, Building2, ChevronDown } from "lucide-react";
+import { Search, Filter, Eye, Download, Building2, ChevronDown, Loader2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { supabase } from "@/integrations/supabase/client";
 
 type StaffStatus = "New" | "Contacted" | "Hired" | "Closed";
 type KitchenStatus = "New" | "Processing" | "Delivered" | "Closed";
 type CCGStatus = "New" | "Processing" | "Delivered" | "Closed";
 
 interface BusinessRequirement {
-  id: number;
+  id: string;
   photo: string | null;
   hotelName: string;
   location: string;
   ownerName: string;
   phone: string;
-  requirements: string;
+  requirements: string | null;
   date: string;
   status: string;
 }
@@ -36,7 +37,8 @@ interface AdminDataTableProps {
   data: BusinessRequirement[];
   statuses: string[];
   statusColors: Record<string, string>;
-  onStatusChange: (id: number, newStatus: string) => void;
+  onStatusChange: (id: string, newStatus: string) => void;
+  loading?: boolean;
 }
 
 const defaultStatusColors: Record<string, string> = {
@@ -48,7 +50,7 @@ const defaultStatusColors: Record<string, string> = {
   Closed: "bg-gray-500 text-white",
 };
 
-const AdminDataTable = ({ title, subtitle, data, statuses, statusColors, onStatusChange }: AdminDataTableProps) => {
+const AdminDataTable = ({ title, subtitle, data, statuses, statusColors, onStatusChange, loading }: AdminDataTableProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedItem, setSelectedItem] = useState<BusinessRequirement | null>(null);
@@ -59,6 +61,14 @@ const AdminDataTable = ({ title, subtitle, data, statuses, statusColors, onStatu
     const matchesStatus = statusFilter === "all" || item.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 lg:p-8">
@@ -125,7 +135,7 @@ const AdminDataTable = ({ title, subtitle, data, statuses, statusColors, onStatu
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">{item.hotelName}</TableCell>
-                  <TableCell className="hidden md:table-cell text-muted-foreground">{item.location}</TableCell>
+                  <TableCell className="hidden md:table-cell text-muted-foreground">{item.location || "-"}</TableCell>
                   <TableCell className="hidden lg:table-cell">{item.ownerName}</TableCell>
                   <TableCell className="hidden xl:table-cell text-muted-foreground">{item.phone}</TableCell>
                   <TableCell className="hidden lg:table-cell text-muted-foreground">{item.date}</TableCell>
@@ -158,8 +168,10 @@ const AdminDataTable = ({ title, subtitle, data, statuses, statusColors, onStatu
                         <Eye className="w-4 h-4" />
                       </Button>
                       {item.requirements && (
-                        <Button variant="ghost" size="icon">
-                          <Download className="w-4 h-4" />
+                        <Button variant="ghost" size="icon" asChild>
+                          <a href={item.requirements} target="_blank" rel="noopener noreferrer">
+                            <Download className="w-4 h-4" />
+                          </a>
                         </Button>
                       )}
                     </div>
@@ -195,7 +207,7 @@ const AdminDataTable = ({ title, subtitle, data, statuses, statusColors, onStatu
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg">{selectedItem.hotelName}</h3>
-                  <p className="text-muted-foreground">{selectedItem.location}</p>
+                  <p className="text-muted-foreground">{selectedItem.location || "-"}</p>
                 </div>
               </div>
 
@@ -221,9 +233,11 @@ const AdminDataTable = ({ title, subtitle, data, statuses, statusColors, onStatu
               </div>
 
               {selectedItem.requirements && (
-                <Button variant="secondary" className="w-full">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download Requirements ({selectedItem.requirements})
+                <Button variant="secondary" className="w-full" asChild>
+                  <a href={selectedItem.requirements} target="_blank" rel="noopener noreferrer">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download Requirements
+                  </a>
                 </Button>
               )}
             </div>
@@ -234,7 +248,7 @@ const AdminDataTable = ({ title, subtitle, data, statuses, statusColors, onStatu
   );
 };
 
-// Staff Requirements with full data
+// Staff Requirements with real data
 const staffStatuses: StaffStatus[] = ["New", "Contacted", "Hired", "Closed"];
 const staffStatusColors: Record<string, string> = {
   New: "bg-blue-500 text-white",
@@ -243,46 +257,45 @@ const staffStatusColors: Record<string, string> = {
   Closed: "bg-gray-500 text-white",
 };
 
-const initialStaffData: BusinessRequirement[] = [
-  { 
-    id: 1, 
-    photo: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=150&h=150&fit=crop",
-    hotelName: "Grand Palace Hotel", 
-    location: "Mumbai", 
-    ownerName: "Vikram Shah", 
-    phone: "+91 98765 43210", 
-    requirements: "staff_requirements.pdf",
-    date: "2024-01-15", 
-    status: "New" 
-  },
-  { 
-    id: 2, 
-    photo: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=150&h=150&fit=crop",
-    hotelName: "Royal Inn", 
-    location: "Delhi", 
-    ownerName: "Anita Gupta", 
-    phone: "+91 98765 43211", 
-    requirements: "royal_inn_staff.pdf",
-    date: "2024-01-14", 
-    status: "Contacted" 
-  },
-  { 
-    id: 3, 
-    photo: null,
-    hotelName: "Sunset Resort", 
-    location: "Goa", 
-    ownerName: "James D'Souza", 
-    phone: "+91 98765 43212", 
-    requirements: "sunset_staff.pdf",
-    date: "2024-01-13", 
-    status: "New" 
-  },
-];
-
 export const AdminStaff = () => {
-  const [staffData, setStaffData] = useState<BusinessRequirement[]>(initialStaffData);
+  const [staffData, setStaffData] = useState<BusinessRequirement[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleStatusChange = (id: number, newStatus: string) => {
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('business_type', 'staff')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const mapped: BusinessRequirement[] = (data || []).map(item => ({
+        id: item.id,
+        photo: item.logo_url,
+        hotelName: item.hotel_name,
+        location: item.location || "",
+        ownerName: item.owner_name,
+        phone: item.contact_number,
+        requirements: item.document_url,
+        date: new Date(item.created_at).toLocaleDateString(),
+        status: "New",
+      }));
+
+      setStaffData(mapped);
+    } catch (error) {
+      console.error("Error fetching staff data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusChange = (id: string, newStatus: string) => {
     setStaffData(prev => prev.map(item => 
       item.id === id ? { ...item, status: newStatus } : item
     ));
@@ -296,11 +309,12 @@ export const AdminStaff = () => {
       statuses={staffStatuses}
       statusColors={staffStatusColors}
       onStatusChange={handleStatusChange}
+      loading={loading}
     />
   );
 };
 
-// Kitchen Equipment with full data
+// Kitchen Equipment with real data
 const kitchenStatuses: KitchenStatus[] = ["New", "Processing", "Delivered", "Closed"];
 const kitchenStatusColors: Record<string, string> = {
   New: "bg-blue-500 text-white",
@@ -309,35 +323,45 @@ const kitchenStatusColors: Record<string, string> = {
   Closed: "bg-gray-500 text-white",
 };
 
-const initialKitchenData: BusinessRequirement[] = [
-  { 
-    id: 1, 
-    photo: "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=150&h=150&fit=crop",
-    hotelName: "The Oberoi", 
-    location: "Bangalore", 
-    ownerName: "Suresh Menon", 
-    phone: "+91 98765 43210", 
-    requirements: "oberoi_kitchen.pdf",
-    date: "2024-01-15", 
-    status: "New" 
-  },
-  { 
-    id: 2, 
-    photo: null,
-    hotelName: "Cafe Mocha", 
-    location: "Pune", 
-    ownerName: "Ritu Kapoor", 
-    phone: "+91 98765 43211", 
-    requirements: "cafe_kitchen.pdf",
-    date: "2024-01-14", 
-    status: "New" 
-  },
-];
-
 export const AdminKitchen = () => {
-  const [kitchenData, setKitchenData] = useState<BusinessRequirement[]>(initialKitchenData);
+  const [kitchenData, setKitchenData] = useState<BusinessRequirement[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleStatusChange = (id: number, newStatus: string) => {
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('business_type', 'kitchen')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const mapped: BusinessRequirement[] = (data || []).map(item => ({
+        id: item.id,
+        photo: item.logo_url,
+        hotelName: item.hotel_name,
+        location: item.location || "",
+        ownerName: item.owner_name,
+        phone: item.contact_number,
+        requirements: item.document_url,
+        date: new Date(item.created_at).toLocaleDateString(),
+        status: "New",
+      }));
+
+      setKitchenData(mapped);
+    } catch (error) {
+      console.error("Error fetching kitchen data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusChange = (id: string, newStatus: string) => {
     setKitchenData(prev => prev.map(item => 
       item.id === id ? { ...item, status: newStatus } : item
     ));
@@ -351,11 +375,12 @@ export const AdminKitchen = () => {
       statuses={kitchenStatuses}
       statusColors={kitchenStatusColors}
       onStatusChange={handleStatusChange}
+      loading={loading}
     />
   );
 };
 
-// CCG Requirements with full data
+// CCG Requirements with real data
 const ccgStatuses: CCGStatus[] = ["New", "Processing", "Delivered", "Closed"];
 const ccgStatusColors: Record<string, string> = {
   New: "bg-blue-500 text-white",
@@ -364,46 +389,45 @@ const ccgStatusColors: Record<string, string> = {
   Closed: "bg-gray-500 text-white",
 };
 
-const initialCCGData: BusinessRequirement[] = [
-  { 
-    id: 1, 
-    photo: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=150&h=150&fit=crop",
-    hotelName: "Taj Mahal Palace", 
-    location: "Mumbai", 
-    ownerName: "Rahul Mehra", 
-    phone: "+91 98765 43210", 
-    requirements: "taj_ccg.pdf",
-    date: "2024-01-15", 
-    status: "New" 
-  },
-  { 
-    id: 2, 
-    photo: "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=150&h=150&fit=crop",
-    hotelName: "ITC Grand", 
-    location: "Chennai", 
-    ownerName: "Lakshmi Iyer", 
-    phone: "+91 98765 43211", 
-    requirements: "itc_ccg.pdf",
-    date: "2024-01-14", 
-    status: "Processing" 
-  },
-  { 
-    id: 3, 
-    photo: null,
-    hotelName: "Marriott", 
-    location: "Hyderabad", 
-    ownerName: "Arun Reddy", 
-    phone: "+91 98765 43212", 
-    requirements: "marriott_ccg.pdf",
-    date: "2024-01-13", 
-    status: "Delivered" 
-  },
-];
-
 export const AdminCCG = () => {
-  const [ccgData, setCCGData] = useState<BusinessRequirement[]>(initialCCGData);
+  const [ccgData, setCCGData] = useState<BusinessRequirement[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleStatusChange = (id: number, newStatus: string) => {
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('businesses')
+        .select('*')
+        .eq('business_type', 'ccg')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const mapped: BusinessRequirement[] = (data || []).map(item => ({
+        id: item.id,
+        photo: item.logo_url,
+        hotelName: item.hotel_name,
+        location: item.location || "",
+        ownerName: item.owner_name,
+        phone: item.contact_number,
+        requirements: item.document_url,
+        date: new Date(item.created_at).toLocaleDateString(),
+        status: "New",
+      }));
+
+      setCCGData(mapped);
+    } catch (error) {
+      console.error("Error fetching CCG data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStatusChange = (id: string, newStatus: string) => {
     setCCGData(prev => prev.map(item => 
       item.id === id ? { ...item, status: newStatus } : item
     ));
@@ -417,6 +441,7 @@ export const AdminCCG = () => {
       statuses={ccgStatuses}
       statusColors={ccgStatusColors}
       onStatusChange={handleStatusChange}
+      loading={loading}
     />
   );
 };
