@@ -60,14 +60,22 @@ const BusinessForm = ({ title, subtitle, documentLabel }: BusinessFormProps) => 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
+      <header 
+        className="sticky top-0 z-50 backdrop-blur-sm border-b border-white/10"
+        style={{ backgroundColor: "#5a2aa0" }}
+      >
         <div className="px-4 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/home")}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate("/home")}
+            className="text-white hover:bg-white/10"
+          >
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-lg font-display font-semibold">{title}</h1>
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
+            <h1 className="text-lg font-display font-semibold text-white">{title}</h1>
+            <p className="text-sm" style={{ color: "rgb(253, 239, 52)" }}>{subtitle}</p>
           </div>
         </div>
       </header>
@@ -115,7 +123,7 @@ const BusinessForm = ({ title, subtitle, documentLabel }: BusinessFormProps) => 
             <Label htmlFor="hotelName">Hotel Name *</Label>
             <Input
               id="hotelName"
-              placeholder="Enter hotel/restaurant name"
+              placeholder="Enter Hotel Name"
               value={formData.hotelName}
               onChange={(e) => setFormData({ ...formData, hotelName: e.target.value })}
             />

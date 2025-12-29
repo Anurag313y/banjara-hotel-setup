@@ -48,12 +48,12 @@ const AdminLayout = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile Header */}
-      <header className="lg:hidden sticky top-0 z-50 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <header className="lg:hidden sticky top-0 z-50 bg-card border-b border-border px-3 sm:px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
             <img src={banjaraLogo} alt="Banjara" className="w-full h-full object-cover" />
           </div>
-          <h1 className="text-lg font-display font-semibold">Banjara Admin</h1>
+          <h1 className="text-base sm:text-lg font-display font-semibold">Banjara Admin</h1>
         </div>
         <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -70,18 +70,18 @@ const AdminLayout = () => {
         >
           <div className="h-full flex flex-col">
             {/* Logo */}
-            <div className="p-6 border-b border-border hidden lg:flex items-center gap-3">
+            <div className="p-4 sm:p-6 border-b border-border hidden lg:flex items-center gap-3">
               <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
                 <img src={banjaraLogo} alt="Banjara" className="w-full h-full object-cover" />
               </div>
               <div>
-                <h1 className="text-xl font-display font-bold text-foreground">Banjara</h1>
-                <p className="text-sm text-muted-foreground">Admin Panel</p>
+                <h1 className="text-lg sm:text-xl font-display font-bold text-foreground">Banjara</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground">Admin Panel</p>
               </div>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-1 overflow-y-auto mt-16 lg:mt-0">
+            <nav className="flex-1 p-3 sm:p-4 space-y-1 overflow-y-auto mt-16 lg:mt-0">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 return (
@@ -92,13 +92,13 @@ const AdminLayout = () => {
                       setSidebarOpen(false);
                     }}
                     className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors",
+                      "w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-medium transition-colors",
                       isActive 
                         ? "bg-primary text-primary-foreground" 
                         : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                     )}
                   >
-                    <item.icon className="w-5 h-5" />
+                    <item.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                     {item.label}
                   </button>
                 );
@@ -106,13 +106,13 @@ const AdminLayout = () => {
             </nav>
 
             {/* Logout */}
-            <div className="p-4 border-t border-border">
+            <div className="p-3 sm:p-4 border-t border-border">
               <Button 
                 variant="ghost" 
-                className="w-full justify-start text-muted-foreground hover:text-destructive"
+                className="w-full justify-start text-muted-foreground hover:text-destructive text-xs sm:text-sm"
                 onClick={handleLogout}
               >
-                <LogOut className="w-5 h-5 mr-3" />
+                <LogOut className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
                 Logout
               </Button>
             </div>
@@ -128,7 +128,7 @@ const AdminLayout = () => {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 min-h-screen lg:min-h-[calc(100vh)]">
+        <main className="flex-1 min-h-screen lg:min-h-[calc(100vh)] overflow-x-hidden">
           <Outlet />
         </main>
       </div>

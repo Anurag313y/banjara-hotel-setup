@@ -43,7 +43,8 @@ const CategoryCard = ({ title, description, image, path, bgColor, delay }: Categ
           <Button 
             variant="default" 
             size="sm" 
-            className="h-6 px-2 py-1 text-xs rounded-full bg-slate-700 hover:bg-slate-800 text-white w-fit"
+            className="h-6 px-2 py-1 text-xs rounded-full text-white w-fit"
+            style={{ backgroundColor: "#5a2aa0" }}
           >
             Apply
           </Button>
@@ -63,7 +64,10 @@ const PersonCard = ({ name, image }: PersonCardProps) => (
     <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
       <img src={image} alt={name} className="w-full h-full object-cover" />
     </div>
-    <span className="text-xs font-medium bg-slate-700 text-white px-3 py-1.5 rounded-full text-center flex items-center justify-center w-[90px] h-[32px] whitespace-nowrap overflow-hidden text-ellipsis">
+    <span 
+      className="text-xs font-medium text-white px-3 py-1.5 rounded-full text-center flex items-center justify-center w-[90px] h-[32px] whitespace-nowrap overflow-hidden text-ellipsis"
+      style={{ backgroundColor: "#5a2aa0" }}
+    >
       {name}
     </span>
   </div>
@@ -79,7 +83,10 @@ const ResortCard = ({ name, logo }: ResortCardProps) => (
     <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
       <img src={logo} alt={name} className="w-full h-full object-cover" />
     </div>
-    <span className="text-xs font-medium bg-slate-700 text-white px-3 py-1.5 rounded-full text-center flex items-center justify-center w-[90px] h-[32px] whitespace-nowrap overflow-hidden text-ellipsis">
+    <span 
+      className="text-xs font-medium text-white px-3 py-1.5 rounded-full text-center flex items-center justify-center w-[90px] h-[32px] whitespace-nowrap overflow-hidden text-ellipsis"
+      style={{ backgroundColor: "#5a2aa0" }}
+    >
       {name}
     </span>
   </div>
@@ -144,14 +151,20 @@ const HomeScreen = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Professional Header */}
-      <header className="bg-gradient-to-r from-slate-800 to-slate-700 px-4 py-4 animate-fade-up shadow-lg mb-4" style={{ animationDelay: "0.1s" }}>
+      <header 
+        className="px-4 py-4 animate-fade-up shadow-lg mb-4" 
+        style={{ 
+          animationDelay: "0.1s",
+          backgroundColor: "#5a2aa0"
+        }}
+      >
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
             <img src={banjaraLogo} alt="Banjara" className="w-full h-full object-cover" />
           </div>
           <div className="flex-1">
             <h1 className="text-xl font-display font-bold text-white leading-tight tracking-wide">Banjara</h1>
-            <p className="text-sm text-slate-300 font-medium">Set Up My Hotel</p>
+            <p className="text-sm text-purple-200 font-medium">Set Up My Hotel</p>
           </div>
         </div>
       </header>
@@ -176,7 +189,7 @@ const HomeScreen = () => {
 
       {/* Occupied People Section */}
       <section className="px-4 pb-4 animate-fade-up" style={{ animationDelay: "0.5s" }}>
-        <div className="bg-muted/50 rounded-2xl p-4">
+        <div className="bg-amber-50/90 border border-amber-100/70 rounded-2xl p-4">
           <div className="text-center mb-3">
             <h2 className="text-base font-semibold text-foreground mb-0.5">Occupied People</h2>
             <p className="text-xs text-muted-foreground">
@@ -211,7 +224,7 @@ const HomeScreen = () => {
 
       {/* Verified Resorts Section */}
       <section className="px-4 pb-6 animate-fade-up" style={{ animationDelay: "0.6s" }}>
-        <div className="bg-muted/50 rounded-2xl p-4">
+        <div className="bg-blue-50/90 border border-blue-100/70 rounded-2xl p-4">
           <div className="text-center mb-3">
             <h2 className="text-base font-semibold text-foreground mb-0.5">Verified Resorts</h2>
             <p className="text-xs text-muted-foreground">

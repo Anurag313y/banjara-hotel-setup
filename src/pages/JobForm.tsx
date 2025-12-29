@@ -46,8 +46,8 @@ const JobForm = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.fullName || !formData.phone || !formData.jobProfile) {
-      toast.error("Please fill in all required fields");
+    if (!formData.fullName || !formData.phone || !formData.jobProfile || !formData.resume) {
+      toast.error("Please fill in all required fields including resume");
       return;
     }
 
@@ -58,14 +58,22 @@ const JobForm = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/50">
+      <header 
+        className="sticky top-0 z-50 backdrop-blur-sm border-b border-white/10"
+        style={{ backgroundColor: "#5a2aa0" }}
+      >
         <div className="px-4 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/home")}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => navigate("/home")}
+            className="text-white hover:bg-white/10"
+          >
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-lg font-display font-semibold">Looking For Job</h1>
-            <p className="text-sm text-muted-foreground">Submit your profile</p>
+            <h1 className="text-lg font-display font-semibold text-white">Looking For Job</h1>
+            <p className="text-sm" style={{ color: "rgb(253, 239, 52)" }}>Submit your profile</p>
           </div>
         </div>
       </header>
@@ -196,7 +204,7 @@ const JobForm = () => {
 
           {/* Resume Upload */}
           <div className="space-y-2">
-            <Label>Upload Resume (PDF)</Label>
+            <Label>Upload Resume (PDF) *</Label>
             <div
               className="border-2 border-dashed border-border rounded-xl p-5 text-center cursor-pointer hover:border-primary/50 transition-colors"
               onClick={() => resumeInputRef.current?.click()}
@@ -205,7 +213,7 @@ const JobForm = () => {
               {formData.resume ? (
                 <p className="text-sm text-primary font-medium">{formData.resume.name}</p>
               ) : (
-                <p className="text-sm text-muted-foreground">Tap to upload PDF</p>
+                <p className="text-sm text-muted-foreground">Tap to upload PDF (Required)</p>
               )}
             </div>
             <input

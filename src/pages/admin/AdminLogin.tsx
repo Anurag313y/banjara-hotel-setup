@@ -31,11 +31,11 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Banjara Admin</CardTitle>
-          <CardDescription>Sign in to manage submissions</CardDescription>
+          <CardTitle className="text-xl sm:text-2xl">Banjara Admin</CardTitle>
+          <CardDescription className="text-sm">Sign in to manage submissions</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -46,7 +46,6 @@ const AdminLogin = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@banjara.com"
                   className="pl-10"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -62,7 +61,6 @@ const AdminLogin = () => {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="••••••••"
                   className="pl-10"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
